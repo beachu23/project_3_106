@@ -72,3 +72,9 @@ body {
 .legend-male {
   background-color: #69b3a2;
 }
+
+circle.data-dot.selected {
+  r: 10 !important;
+  stroke-width: 3;
+  filter: brightness(0.70);
+}

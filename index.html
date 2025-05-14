@@ -54,104 +54,139 @@
   </div>
 
   <script>
-    Promise.all([
-      d3.csv("Full_Dexcom_Summary__All_16_Participants_.csv"),
-      d3.json("glucose_time_series.json")
-    ]).then(([summary, seriesData]) => {
-      summary.forEach(d => {
-        d.participant_id = String(d.participant_id).padStart(3, "0");
-        d.mean_glucose = parseFloat(d.mean_glucose);
-        d.std_glucose = parseFloat(d.std_glucose);
-      });
-
-      const svg = d3.select("#scatterplot"),
-            width = +svg.attr("width"),
-            height = +svg.attr("height"),
-            margin = { top: 60, right: 40, bottom: 60, left: 60 };
-
-      const x = d3.scaleLinear()
-                  .domain(d3.extent(summary, d => d.mean_glucose)).nice()
-                  .range([margin.left, width - margin.right]);
-
-      const y = d3.scaleLinear()
-                  .domain(d3.extent(summary, d => d.std_glucose)).nice()
-                  .range([height - margin.bottom, margin.top]);
-
-      svg.append("g")
-         .attr("transform", `translate(0,${height - margin.bottom})`)
-         .call(d3.axisBottom(x));
-
-      svg.append("text")
-         .attr("x", width / 2)
-         .attr("y", height - 10)
-         .attr("text-anchor", "middle")
-         .attr("fill", "black")
-         .text("Mean Glucose");
-
-      svg.append("g")
-         .attr("transform", `translate(${margin.left},0)`)
-         .call(d3.axisLeft(y));
-
-      svg.append("text")
-         .attr("transform", "rotate(-90)")
-         .attr("x", -height / 2)
-         .attr("y", 20)
-         .attr("text-anchor", "middle")
-         .attr("fill", "black")
-         .text("Glucose Std Dev");
-
-      svg.selectAll("circle.data-dot")
-         .data(summary)
-         .join("circle")
-         .attr("class", "data-dot")
-         .attr("cx", d => x(d.mean_glucose))
-         .attr("cy", d => y(d.std_glucose))
-         .attr("r", 6)
-         .attr("fill", d => d.Gender === "FEMALE" ? "#e67ea0" : "#69b3a2")
-         .attr("stroke", "#222")
-         .attr("stroke-width", 0.5)
-         .on("mouseover", (event, d) => drawPreview(d.participant_id));
-
-      const previewSVG = d3.select("#previewPlot"),
-            previewW = +previewSVG.attr("width"),
-            previewH = +previewSVG.attr("height");
-
-      function drawPreview(pid) {
-        const data = seriesData[pid].map(([ts, val]) => ({
-          timestamp: new Date(ts),
-          glucose: +val
-        }));
-
-        const xScale = d3.scaleTime()
-                         .domain(d3.extent(data, d => d.timestamp))
-                         .range([50, previewW - 20]);
-
-        const yScale = d3.scaleLinear()
-                         .domain(d3.extent(data, d => d.glucose)).nice()
-                         .range([previewH - 30, 10]);
-
-        previewSVG.selectAll("*").remove();
-
-        previewSVG.append("g")
-                  .attr("transform", `translate(0,${previewH - 30})`)
-                  .call(d3.axisBottom(xScale).ticks(6));
-
-        previewSVG.append("g")
-                  .attr("transform", `translate(50,0)`)
-                  .call(d3.axisLeft(yScale).ticks(5));
-
-        const line = d3.line()
-                       .x(d => xScale(d.timestamp))
-                       .y(d => yScale(d.glucose));
-
-        previewSVG.append("path")
-                  .datum(data)
-                  .attr("fill", "none")
-                  .attr("stroke", "#333")
-                  .attr("stroke-width", 2)
-                  .attr("d", line);
-      }
+  Promise.all([
+    d3.csv("Full_Dexcom_Summary__All_16_Participants_.csv"),
+    d3.json("glucose_time_series.json")
+  ]).then(([summary, seriesData]) => {
+    summary.forEach(d => {
+      d.participant_id = String(d.participant_id).padStart(3, "0");
+      d.mean_glucose = parseFloat(d.mean_glucose);
+      d.std_glucose = parseFloat(d.std_glucose);
     });
-  </script>
+
+    const svg = d3.select("#scatterplot"),
+          width = +svg.attr("width"),
+          height = +svg.attr("height"),
+          margin = { top: 60, right: 40, bottom: 60, left: 60 };
+
+    const x = d3.scaleLinear()
+                .domain(d3.extent(summary, d => d.mean_glucose)).nice()
+                .range([margin.left, width - margin.right]);
+
+    const y = d3.scaleLinear()
+                .domain(d3.extent(summary, d => d.std_glucose)).nice()
+                .range([height - margin.bottom, margin.top]);
+
+    svg.append("g")
+       .attr("transform", `translate(0,${height - margin.bottom})`)
+       .call(d3.axisBottom(x));
+
+    svg.append("text")
+       .attr("x", width / 2)
+       .attr("y", height - 10)
+       .attr("text-anchor", "middle")
+       .attr("fill", "black")
+       .text("Mean Glucose");
+
+    svg.append("g")
+       .attr("transform", `translate(${margin.left},0)`)
+       .call(d3.axisLeft(y));
+
+    svg.append("text")
+       .attr("transform", "rotate(-90)")
+       .attr("x", -height / 2)
+       .attr("y", 20)
+       .attr("text-anchor", "middle")
+       .attr("fill", "black")
+       .text("Glucose Std Dev");
+
+    let selectedDot = null;
+
+    svg.selectAll("circle.data-dot")
+       .data(summary)
+       .join("circle")
+       .attr("class", "data-dot")
+       .attr("cx", d => x(d.mean_glucose))
+       .attr("cy", d => y(d.std_glucose))
+       .attr("r", 6)
+       .attr("fill", d => d.Gender === "FEMALE" ? "#e67ea0" : "#69b3a2")
+       .attr("stroke", "#222")
+       .attr("stroke-width", 0.5)
+       .style("cursor", "pointer")
+       .on("click", function(event, d) {
+         drawPreview(d.participant_id);
+
+         if (selectedDot) {
+           selectedDot.classList.remove("selected");
+         }
+         this.classList.add("selected");
+         selectedDot = this;
+       });
+
+    const previewSVG = d3.select("#previewPlot"),
+          previewW = +previewSVG.attr("width"),
+          previewH = +previewSVG.attr("height");
+
+    function drawPreview(pid) {
+  const data = seriesData[pid].map(([ts, val]) => ({
+    timestamp: new Date(ts),
+    glucose: +val
+  }));
+
+  const xScale = d3.scaleTime()
+                   .domain(d3.extent(data, d => d.timestamp))
+                   .range([50, previewW - 20]);
+
+  const yScale = d3.scaleLinear()
+                   .domain(d3.extent(data, d => d.glucose)).nice()
+                   .range([previewH - 30, 10]);
+
+  // Create axis generators
+  const xAxis = d3.axisBottom(xScale).ticks(6);
+  const yAxis = d3.axisLeft(yScale).ticks(5);
+
+  // Reuse or create axes
+  let xAxisG = previewSVG.select("g.x-axis");
+  let yAxisG = previewSVG.select("g.y-axis");
+
+  if (xAxisG.empty()) {
+    xAxisG = previewSVG.append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0,${previewH - 30})`);
+  }
+
+  if (yAxisG.empty()) {
+    yAxisG = previewSVG.append("g")
+      .attr("class", "y-axis")
+      .attr("transform", `translate(50,0)`);
+  }
+
+  // Transition the axes
+  xAxisG.transition().duration(600).call(xAxis);
+  yAxisG.transition().duration(600).call(yAxis);
+
+  // Bind data to the line
+  const line = d3.line()
+                 .x(d => xScale(d.timestamp))
+                 .y(d => yScale(d.glucose));
+
+  let path = previewSVG.selectAll("path.preview-line").data([data]);
+
+  path.enter()
+      .append("path")
+      .attr("class", "preview-line")
+      .attr("fill", "none")
+      .attr("stroke", "#333")
+      .attr("stroke-width", 2)
+      .attr("d", line)
+    .merge(path)
+      .transition()
+      .duration(600)
+      .attr("d", line);
+
+  path.exit().remove();
+}
+  });
+</script>
 </body>
 </html>
