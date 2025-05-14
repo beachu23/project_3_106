@@ -40,7 +40,15 @@
 
     <div class="card">
       <h2>Design Rationale</h2>
-      <p>
+      <p>	
+We chose this visualization because glycemic variability is often an overlooked indicator for diabetes and cardiovascular problems. High glucose levels + high variability warrants close monitoring for diabetes, yet low glucose and high variability often potentially indicates undiagnosed diabetes. We were also curious to see the gender distribution - we wanted to see if there was a clear separation in the scatterplot. 
+</p>
+
+<p>
+We found that there was a clear clustering in gender formed - despite some outliers, the men in this study group showed higher glycemic variability as well as glucose levels, proving to be more at risk for diabetes. Additionally, SD outliers show consistent spikes and dips, proving to be a good metric for glycemic variability. 
+
+</p>
+<p>
         Our goal is to enable users to explore the relationship between glucose levels and wearable biometric data such as heart rate, electrodermal activity (EDA), and skin temperature...
       </p>
     </div>
@@ -48,8 +56,17 @@
     <div class="card">
       <h2>Development Process</h2>
       <p>
-        We split tasks as follows: data wrangling and alignment, D3 implementation, and write-up/documentation...
-      </p>
+We combined the Dexcom datasets for all 16 participants with Demographics.csv and used pandas manipulation to calculate the mean and standard deviation of glucose levels for each participant. We then converted each participant’s full time series into a JSON file for the interactive visualization. Using D3, we created a scatterplot where each participant is represented as a circle, color-coded by gender. We implemented an interaction that looks up the participant’s time series in the JSON, converts timestamps to Date objects, and dynamically renders a glucose line chart that updates upon click.
+</p>
+
+<p>
+Initially, we explored two ideas - a time series graph showing glucose levels for each participant, and a scatter plot plotting mean against standard deviation for glucose. We decided to combine both into one, resulting in the visualization above.
+</p>
+
+<p>
+We chose a dullish pink (#e67ea0) for females and a teal green (#69b3a2) for males, providing a stark visual contrast while reducing eye strain. The off-white background with no gridlines declutters the graph and provides a clean background to support the click interaction. SVGs use <code>width: 100%</code> to adapt to screen sizes and zooming in/out. Upon click, we added a dark black border to show users which point in the scatterplot has its time series displayed.
+</p>
+
     </div>
   </div>
 
