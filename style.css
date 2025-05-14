@@ -1,0 +1,74 @@
+:root {
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --text: #2c3e50;
+  --accent: #3498db;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 2rem;
+}
+
+.container {
+  padding: 20px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+#viz-container {
+  border: 2px dashed #ccc;
+  background: #fff;
+  display: block;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+#scatterplot,
+#previewPlot {
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.legend {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem auto 0 auto;
+  max-width: 800px;
+  font-size: 0.95rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-female {
+  background-color: #e67ea0;
+}
+
+.legend-male {
+  background-color: #69b3a2;
+}
