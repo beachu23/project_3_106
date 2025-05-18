@@ -142,65 +142,65 @@ We chose a dullish pink (#e67ea0) for females and a teal green (#69b3a2) for mal
           previewH = +previewSVG.attr("height");
 
     function drawPreview(pid) {
-  const data = seriesData[pid].map(([ts, val]) => ({
-    timestamp: new Date(ts),
-    glucose: +val
-  }));
+      const data = seriesData[pid].map(([ts, val]) => ({
+        timestamp: new Date(ts),
+        glucose: +val
+      }));
 
-  const xScale = d3.scaleTime()
-                   .domain(d3.extent(data, d => d.timestamp))
-                   .range([50, previewW - 20]);
+      const xScale = d3.scaleTime()
+                       .domain(d3.extent(data, d => d.timestamp))
+                       .range([50, previewW - 20]);
 
-  const yScale = d3.scaleLinear()
-                   .domain(d3.extent(data, d => d.glucose)).nice()
-                   .range([previewH - 30, 10]);
+      const yScale = d3.scaleLinear()
+                       .domain([50, 200]) // Fixed Y-axis range
+                       .range([previewH - 30, 10]);
 
-  // Create axis generators
-  const xAxis = d3.axisBottom(xScale).ticks(6);
-  const yAxis = d3.axisLeft(yScale).ticks(5);
+      const xAxis = d3.axisBottom(xScale)
+                      .ticks(6)
+                      .tickFormat(d3.timeFormat("%a %m/%d")); // e.g., Tue 03/05
 
-  // Reuse or create axes
-  let xAxisG = previewSVG.select("g.x-axis");
-  let yAxisG = previewSVG.select("g.y-axis");
+      const yAxis = d3.axisLeft(yScale).ticks(5);
 
-  if (xAxisG.empty()) {
-    xAxisG = previewSVG.append("g")
-      .attr("class", "x-axis")
-      .attr("transform", `translate(0,${previewH - 30})`);
-  }
+      let xAxisG = previewSVG.select("g.x-axis");
+      let yAxisG = previewSVG.select("g.y-axis");
 
-  if (yAxisG.empty()) {
-    yAxisG = previewSVG.append("g")
-      .attr("class", "y-axis")
-      .attr("transform", `translate(50,0)`);
-  }
+      if (xAxisG.empty()) {
+        xAxisG = previewSVG.append("g")
+          .attr("class", "x-axis")
+          .attr("transform", `translate(0,${previewH - 30})`);
+      }
 
-  // Transition the axes
-  xAxisG.transition().duration(600).call(xAxis);
-  yAxisG.transition().duration(600).call(yAxis);
+      if (yAxisG.empty()) {
+        yAxisG = previewSVG.append("g")
+          .attr("class", "y-axis")
+          .attr("transform", `translate(50,0)`);
+      }
 
-  // Bind data to the line
-  const line = d3.line()
-                 .x(d => xScale(d.timestamp))
-                 .y(d => yScale(d.glucose));
+      xAxisG.transition().duration(600).call(xAxis);
+      yAxisG.transition().duration(600).call(yAxis);
 
-  let path = previewSVG.selectAll("path.preview-line").data([data]);
+      const line = d3.line()
+                     .x(d => xScale(d.timestamp))
+                     .y(d => yScale(d.glucose));
 
-  path.enter()
-      .append("path")
-      .attr("class", "preview-line")
-      .attr("fill", "none")
-      .attr("stroke", "#333")
-      .attr("stroke-width", 2)
-      .attr("d", line)
-    .merge(path)
-      .transition()
-      .duration(600)
-      .attr("d", line);
+      let path = previewSVG.selectAll("path.preview-line").data([data]);
 
-  path.exit().remove();
-}
+      path.enter()
+          .append("path")
+          .attr("class", "preview-line")
+          .attr("fill", "none")
+          .attr("stroke", "#333")
+          .attr("stroke-width", 2)
+          .attr("d", line)
+        .merge(path)
+          .transition()
+          .duration(600)
+          .attr("d", line);
+
+      path.exit().remove();
+    }
   });
 </script>
+
 </body>
 </html>
